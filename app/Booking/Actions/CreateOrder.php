@@ -12,6 +12,7 @@ use App\Booking\Exceptions\OrderNotModifiable;
 use App\Booking\Exceptions\SeatsUnavailable;
 use App\Booking\Exceptions\TripNotBookable;
 use App\Booking\FareCalculator;
+use App\Booking\Jobs\ExpireOrderJob;
 use App\Booking\SeatAvailability;
 use App\Enums\OrderStatus;
 use App\Enums\ReservationStatus;
@@ -114,6 +115,9 @@ final readonly class CreateOrder
 
                 $order->total = $total;
                 $order->save();
+
+                // Expira o pedido (e libera os assentos) quando o prazo vencer.
+                ExpireOrderJob::scheduleFor($order);
 
                 return $order;
             });

@@ -7,6 +7,7 @@ namespace App\Booking\Actions;
 use App\Booking\BookingSettings;
 use App\Booking\Exceptions\LockNotHeld;
 use App\Booking\Exceptions\OrderNotModifiable;
+use App\Booking\Jobs\ExpireOrderJob;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\SeatLock\SeatLockService;
@@ -45,6 +46,8 @@ final readonly class RenewOrder
             $order->expires_at = $result->expiresAt;
             $order->lock_renewals++;
             $order->save();
+
+            ExpireOrderJob::scheduleFor($order);
 
             return $order;
         });

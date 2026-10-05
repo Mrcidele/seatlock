@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function (): void {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+// Rede de segurança caso algum ExpireOrderJob se perca.
+Schedule::command('orders:expire-stale')->everyMinute()->withoutOverlapping()->onOneServer();
+
+Schedule::command('model:prune')->daily()->onOneServer();
+Schedule::command('horizon:snapshot')->everyFiveMinutes();
