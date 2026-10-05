@@ -53,18 +53,24 @@ class AppServiceProvider extends ServiceProvider
             return is_scalar($id) ? 'user:'.$id : 'ip:'.$request->ip();
         };
 
-        RateLimiter::for('api', fn (Request $request): Limit => Limit::perMinute(120)->by($byUserOrIp($request)));
+        $limit = function (string $key, int $default): int {
+            $value = config("seatlock.rate_limits.{$key}");
+
+            return is_numeric($value) ? (int) $value : $default;
+        };
+
+        RateLimiter::for('api', fn (Request $request): Limit => Limit::perMinute($limit('api', 120))->by($byUserOrIp($request)));
 
         RateLimiter::for('auth', fn (Request $request): Limit => Limit::perMinute(10)->by('ip:'.((string) $request->ip())));
 
         // Os endpoints de lock são o alvo preferido de abuso (travar o ônibus
         // inteiro): limite por usuário e, separadamente, por IP.
         RateLimiter::for('seat-locks', fn (Request $request): array => [
-            Limit::perMinute(30)->by($byUserOrIp($request)),
-            Limit::perMinute(60)->by('ip:'.((string) $request->ip())),
+            Limit::perMinute($limit('locks_per_user', 30))->by($byUserOrIp($request)),
+            Limit::perMinute($limit('locks_per_ip', 60))->by('ip:'.((string) $request->ip())),
         ]);
 
-        RateLimiter::for('orders', fn (Request $request): Limit => Limit::perMinute(20)->by($byUserOrIp($request)));
+        RateLimiter::for('orders', fn (Request $request): Limit => Limit::perMinute($limit('orders', 20))->by($byUserOrIp($request)));
 
         RateLimiter::for('webhooks', fn (Request $request): Limit => Limit::perMinute(600)->by('ip:'.((string) $request->ip())));
     }

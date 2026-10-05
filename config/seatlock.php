@@ -23,6 +23,14 @@ return [
         'max_seats_per_order' => (int) env('SEATLOCK_MAX_SEATS_PER_ORDER', 6),
     ],
 
+    // Requisições por minuto. Os endpoints de lock têm limite por usuário e por IP.
+    'rate_limits' => [
+        'api' => (int) env('RATE_LIMIT_API', 120),
+        'locks_per_user' => (int) env('RATE_LIMIT_LOCKS_PER_USER', 30),
+        'locks_per_ip' => (int) env('RATE_LIMIT_LOCKS_PER_IP', 60),
+        'orders' => (int) env('RATE_LIMIT_ORDERS', 20),
+    ],
+
     'orders' => [
         // Folga antes de a reconciliação considerar um pedido pendente vencido.
         'reconciliation_grace_seconds' => (int) env('SEATLOCK_RECONCILIATION_GRACE', 30),
