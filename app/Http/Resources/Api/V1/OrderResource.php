@@ -22,7 +22,9 @@ class OrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $this->resource->loadMissing(['reservations.seat', 'reservations.passenger', 'reservations.ticket', 'payments']);
+        $order = $this->resource;
+        assert($order instanceof Order);
+        $order->loadMissing(['reservations.seat', 'reservations.passenger', 'reservations.ticket', 'payments']);
 
         return [
             'id' => $this->id,

@@ -61,7 +61,13 @@ final class EnsureIdempotency
             throw $e;
         }
 
-        if (! $response instanceof Response || $response->getStatusCode() >= 500) {
+        if (! $response instanceof Response) {
+            $this->forget($scope, $key);
+
+            return $this->problem(500, 'Erro interno', 'Resposta inesperada.', 'internal-error');
+        }
+
+        if ($response->getStatusCode() >= 500) {
             $this->forget($scope, $key);
 
             return $response;

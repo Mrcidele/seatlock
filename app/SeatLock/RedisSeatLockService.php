@@ -95,17 +95,17 @@ final readonly class RedisSeatLockService implements SeatLockService
             throw new LockBackendUnavailable('Resposta inesperada do Redis ao travar assentos.');
         }
 
-        $status = (int) array_shift($reply);
+        $status = self::int(array_shift($reply));
 
         if ($status === 1) {
-            $ttlMs = (int) ($reply[0] ?? $ttlSeconds * 1000);
+            $ttlMs = self::int($reply[0] ?? $ttlSeconds * 1000);
 
             return LockResult::acquired($this->expiryFromMilliseconds($ttlMs));
         }
 
         $conflicting = [];
         foreach ($reply as $index) {
-            $conflicting[] = $keys[(int) $index - 1]['seat_id'];
+            $conflicting[] = $keys[self::int($index) - 1]['seat_id'] ?? '';
         }
 
         return LockResult::conflict($conflicting);
@@ -119,13 +119,13 @@ final readonly class RedisSeatLockService implements SeatLockService
 
         $keys = array_column(LockKeys::forSeats($tripId, $seatIds, $leg), 'key');
 
-        return (int) $this->eval(self::RELEASE, $keys, [$owner]);
+        return self::int($this->eval(self::RELEASE, $keys, [$owner]));
     }
 
     public function renew(string $tripId, array $seatIds, Leg $leg, string $owner, int $ttlSeconds): LockResult
     {
         $keys = array_column(LockKeys::forSeats($tripId, $seatIds, $leg), 'key');
-        $renewed = (int) $this->eval(self::RENEW, $keys, [$owner, $ttlSeconds]);
+        $renewed = self::int($this->eval(self::RENEW, $keys, [$owner, $ttlSeconds]));
 
         return $renewed === 1
             ? LockResult::acquired(CarbonImmutable::now()->addSeconds($ttlSeconds))
@@ -139,7 +139,7 @@ final readonly class RedisSeatLockService implements SeatLockService
         }
 
         $keys = array_column(LockKeys::forSeats($tripId, $seatIds, $leg), 'key');
-        $ttlMs = (int) $this->eval(self::HELD_UNTIL, $keys, [$owner]);
+        $ttlMs = self::int($this->eval(self::HELD_UNTIL, $keys, [$owner]));
 
         return $ttlMs > 0 ? $this->expiryFromMilliseconds($ttlMs) : null;
     }
@@ -193,6 +193,11 @@ final readonly class RedisSeatLockService implements SeatLockService
         }
 
         return $connection;
+    }
+
+    private static function int(mixed $value): int
+    {
+        return is_numeric($value) ? (int) $value : 0;
     }
 
     private function expiryFromMilliseconds(int $milliseconds): CarbonImmutable

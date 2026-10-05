@@ -15,11 +15,13 @@ final class TicketQrCode
      */
     public static function dataUri(string $content): string
     {
-        return (new QRCode(new QROptions([
+        $uri = (new QRCode(new QROptions([
             'outputInterface' => QRGdImagePNG::class,
             'outputBase64' => true,
             'scale' => 6,
             'addQuietzone' => true,
         ])))->render($content);
+
+        return is_string($uri) ? $uri : '';
     }
 }

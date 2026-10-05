@@ -25,7 +25,7 @@ class TripController extends Controller
         return TripSearchResultResource::collection($search->search(
             $request->filled('origin') ? $request->string('origin')->toString() : null,
             $request->filled('destination') ? $request->string('destination')->toString() : null,
-            $date === false ? null : $date,
+            $date,
         ));
     }
 

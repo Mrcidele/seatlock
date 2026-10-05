@@ -92,13 +92,17 @@ class AppServiceProvider extends ServiceProvider
         // Documentação aberta fora de produção; em produção só para admins.
         Gate::define('viewApiDocs', fn (?User $user = null): bool => ! $this->app->isProduction() || $user?->role === UserRole::Admin);
 
-        Scramble::configure()
-            ->routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1') && ! str_starts_with($route->uri, 'api/v1/dev'))
-            ->withDocumentTransformers(function (OpenApi $openApi): void {
-                $openApi->secure(SecurityScheme::http('bearer'));
-                (new ProblemDetailsResponses)($openApi);
-            })
-            ->withOperationTransformers(new RequiredHeaders);
+        $docs = Scramble::configure();
+        $docs->routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1') && ! str_starts_with($route->uri, 'api/v1/dev'));
+        $docs->withDocumentTransformers(function (OpenApi $openApi): void {
+            $bearer = SecurityScheme::http('bearer');
+
+            if ($bearer instanceof SecurityScheme) {
+                $openApi->secure($bearer);
+            }
+            (new ProblemDetailsResponses)($openApi);
+        });
+        $docs->withOperationTransformers(new RequiredHeaders);
     }
 
     private function configureRateLimiting(): void

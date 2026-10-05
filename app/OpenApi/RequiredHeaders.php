@@ -24,21 +24,34 @@ final class RequiredHeaders
         $route = $routeInfo->route;
 
         if (in_array('idempotent', $route->gatherMiddleware(), true)) {
-            $operation->addParameters([
-                Parameter::make(EnsureIdempotency::HEADER, 'header')
-                    ->required(true)
-                    ->setSchema(Schema::fromType((new StringType)->example('9f1c2a7e-4b6d-4f3a-9c8e-1a2b3c4d5e6f')))
-                    ->description('Chave única por operação. Repetir a requisição com a mesma chave devolve a mesma resposta.'),
-            ]);
+            $operation->addParameters([self::header(
+                EnsureIdempotency::HEADER,
+                true,
+                '9f1c2a7e-4b6d-4f3a-9c8e-1a2b3c4d5e6f',
+                'Chave única por operação. Repetir a requisição com a mesma chave devolve a mesma resposta.',
+            )]);
         }
 
         if (in_array($route->getName(), self::CART_ROUTES, true)) {
-            $operation->addParameters([
-                Parameter::make(LockOwner::HEADER, 'header')
-                    ->required($route->getName() !== 'v1.trips.seat-map')
-                    ->setSchema(Schema::fromType((new StringType)->example('cart-7d1e9b20')))
-                    ->description('Identificador do carrinho (8 a 64 caracteres). Dono dos locks temporários.'),
-            ]);
+            $operation->addParameters([self::header(
+                LockOwner::HEADER,
+                $route->getName() !== 'v1.trips.seat-map',
+                'cart-7d1e9b20',
+                'Identificador do carrinho (8 a 64 caracteres). Dono dos locks temporários.',
+            )]);
         }
+    }
+
+    private static function header(string $name, bool $required, string $example, string $description): Parameter
+    {
+        $type = new StringType;
+        $type->example($example);
+
+        $parameter = new Parameter($name, 'header');
+        $parameter->required($required);
+        $parameter->setSchema(Schema::fromType($type));
+        $parameter->description($description);
+
+        return $parameter;
     }
 }
