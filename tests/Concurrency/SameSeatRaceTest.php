@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\SeatSegment;
 use App\Models\Trip;
 use App\Models\User;
@@ -106,6 +108,9 @@ it('still sells the seat exactly once when redis is unavailable', function (): v
     expect($counts['confirmed'] ?? 0)->toBe(1)
         ->and(($counts['seats_taken'] ?? 0) + ($counts['order_rejected'] ?? 0) + ($counts['lock_conflict'] ?? 0))->toBe(CONTENDERS - 1)
         ->and(Order::query()->where('status', OrderStatus::Cancelled)->where('cancellation_reason', 'seat_unavailable')->count())->toBe($counts['seats_taken'] ?? 0)
+        // Todo perdedor que chegou a pagar foi estornado automaticamente.
+        ->and(Payment::query()->where('status', PaymentStatus::Refunded)->count())->toBe($counts['seats_taken'] ?? 0)
+        ->and(Payment::query()->where('status', PaymentStatus::Approved)->count())->toBe(1)
         ->and(SeatSegment::query()->where('seat_id', $this->seat->id)->count())->toBe(3)
         ->and(Order::query()->where('status', OrderStatus::Paid)->count())->toBe(1)
         ->and(Order::query()->where('status', OrderStatus::Pending)->count())->toBe(0);

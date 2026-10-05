@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\DevPaymentController;
 use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SeatLockController;
 use App\Http\Controllers\Api\V1\SeatMapController;
 use App\Http\Controllers\Api\V1\TripController;
+use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function (): void {
@@ -14,6 +17,11 @@ Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function ():
         Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');
         Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
     });
+
+    Route::post('webhooks/{provider}', WebhookController::class)
+        ->middleware('throttle:webhooks')
+        ->withoutMiddleware('throttle:api')
+        ->name('webhooks');
 
     Route::get('trips', [TripController::class, 'index'])->name('trips.index');
     Route::get('trips/{trip}', [TripController::class, 'show'])->name('trips.show');
@@ -35,6 +43,11 @@ Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function ():
             Route::post('orders', [OrderController::class, 'store'])->middleware('idempotent')->name('orders.store');
             Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
             Route::post('orders/{order}/renew', [OrderController::class, 'renew'])->name('orders.renew');
+            Route::post('orders/{order}/payments', [PaymentController::class, 'store'])->middleware('idempotent')->name('orders.payments.store');
         });
+
+        if (app()->environment('local', 'testing')) {
+            Route::post('dev/payments/{payment}/simulate', DevPaymentController::class)->name('dev.payments.simulate');
+        }
     });
 });

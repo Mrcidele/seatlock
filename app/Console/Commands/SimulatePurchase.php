@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Booking\Actions\ConfirmOrder;
 use App\Booking\Actions\CreateOrder;
 use App\Booking\Actions\LockSeats;
 use App\Booking\Data\PassengerData;
@@ -12,15 +11,18 @@ use App\Booking\Exceptions\LockNotHeld;
 use App\Booking\Exceptions\OrderNotModifiable;
 use App\Booking\Exceptions\SeatsUnavailable;
 use App\Booking\LockOwner;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Trip;
 use App\Models\User;
+use App\Payments\Actions\StartPayment;
 use App\SeatLock\InMemorySeatLockService;
 use App\SeatLock\SeatLockService;
 use Illuminate\Console\Command;
 
 /**
  * Executa o fluxo completo de compra de um assento (lock -> pedido ->
- * pagamento aprovado -> confirmação) e imprime o resultado em JSON.
+ * pagamento com cartão no gateway fake -> confirmação) e imprime o resultado em JSON.
  *
  * Usado pelos testes de concorrência, que disparam vários processos deste
  * comando ao mesmo tempo disputando o mesmo assento.
@@ -71,10 +73,18 @@ class SimulatePurchase extends Command
             return $this->report('order_rejected');
         }
 
-        // Pagamento fake aprovado na hora: segue direto para a confirmação.
-        $outcome = $this->laravel->make(ConfirmOrder::class)->handle($order->id);
+        // Cartão no gateway fake: aprovado na hora, o que dispara a confirmação
+        // (e o estorno automático se o banco barrar a venda).
+        $payment = $this->laravel->make(StartPayment::class)->handle($order, PaymentMethod::Card, 'tok_approved');
+        $order->refresh();
 
-        return $this->report($outcome->value, $order->id);
+        $result = match (true) {
+            $order->status === OrderStatus::Paid => 'confirmed',
+            $order->cancellation_reason === 'seat_unavailable' => 'seats_taken',
+            default => 'payment_'.$payment->status->value,
+        };
+
+        return $this->report($result, $order->id);
     }
 
     private function waitForStart(): void

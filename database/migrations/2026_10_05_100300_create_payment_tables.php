@@ -38,6 +38,8 @@ return new class extends Migration
             $table->string('provider', 30);
             $table->string('event_id');
             $table->string('type');
+            $table->string('external_payment_id')->nullable();
+            $table->string('reported_status', 20)->nullable();
             $table->jsonb('payload');
             $table->string('status', 20);
             $table->unsignedSmallInteger('attempts')->default(0);
