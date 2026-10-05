@@ -50,6 +50,15 @@ const payPix = () => run(() => endpoints.pay(orderId.value, { method: 'pix' }, n
 const payCard = () => run(() => endpoints.pay(orderId.value, { method: 'card', card_token: cardToken.value }, newIdempotencyKey()));
 const renew = () => run(() => endpoints.renewOrder(orderId.value));
 const cancel = () => run(() => endpoints.cancelOrder(orderId.value));
+async function downloadTicket(ticketId: string, seatNumber: string): Promise<void> {
+    error.value = null;
+    try {
+        await download(`/tickets/${ticketId}/pdf`, `bilhete-${seatNumber}.pdf`);
+    } catch {
+        error.value = 'Não foi possível baixar o bilhete. Tente novamente.';
+    }
+}
+
 const confirmCancel = () => {
     if (window.confirm('Cancelar a passagem? O reembolso segue a política de antecedência.')) void cancel();
 };
@@ -85,7 +94,7 @@ async function simulatePix(): Promise<void> {
                             v-if="r.ticket_id && order.status === 'paid'"
                             type="button"
                             class="text-blue-700 underline"
-                            @click="download(`/tickets/${r.ticket_id}/pdf`, `bilhete-${r.seat.number}.pdf`)"
+                            @click="downloadTicket(r.ticket_id, r.seat.number)"
                         >Bilhete (PDF)</button>
                     </span>
                 </li>

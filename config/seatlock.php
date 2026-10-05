@@ -37,7 +37,8 @@ return [
     ],
 
     'tickets' => [
-        'signing_key' => env('TICKET_SIGNING_KEY', env('APP_KEY')),
+        // Vazio no .env cai para a APP_KEY.
+        'signing_key' => env('TICKET_SIGNING_KEY') ?: env('APP_KEY'),
     ],
 
     // Política de reembolso por antecedência (horas antes da partida => % em pontos-base).

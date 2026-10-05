@@ -31,7 +31,7 @@ function seatClasses(seat: SeatInfo): string[] {
     if (seat.status === 'sold') return ['bg-slate-300', 'text-slate-500', 'border-slate-300', 'cursor-not-allowed', 'line-through'];
     if (seat.status === 'locked') return ['bg-amber-100', 'text-amber-800', 'border-amber-400', 'cursor-not-allowed', 'seat-locked'];
     if (seat.type === 'sleeper') return ['bg-white', 'border-violet-400', 'hover:bg-violet-50'];
-    if (seat.type === 'accessible') return ['bg-white', 'border-teal-500', 'hover:bg-teal-50'];
+    if (seat.type === 'accessible') return ['bg-white', 'border-sky-500', 'hover:bg-sky-50'];
     return ['bg-white', 'border-emerald-500', 'hover:bg-emerald-50'];
 }
 
@@ -112,7 +112,7 @@ const multiDeck = computed(() => props.seatMap.decks.length > 1);
         <ul class="flex flex-wrap gap-4 text-xs text-slate-600" aria-label="Legenda">
             <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded border-2 border-emerald-500 bg-white" />Convencional</li>
             <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded border-2 border-violet-400 bg-white" />Leito</li>
-            <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded border-2 border-teal-500 bg-white" />PCD</li>
+            <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded border-2 border-sky-500 bg-white" />PCD</li>
             <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded border-2 border-blue-700 bg-blue-600" />Seu</li>
             <li class="flex items-center gap-1.5"><span class="seat-locked h-4 w-4 rounded border-2 border-amber-400 bg-amber-100" />Reservado</li>
             <li class="flex items-center gap-1.5"><span class="h-4 w-4 rounded bg-slate-300" />Vendido</li>
