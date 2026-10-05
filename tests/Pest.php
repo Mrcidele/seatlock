@@ -10,8 +10,12 @@ use App\Models\Reservation;
 use App\Models\Seat;
 use App\Models\SeatSegment;
 use App\Models\Trip;
+use App\Models\User;
+use App\SeatLock\SeatLockService;
 use App\ValueObjects\Leg;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Redis;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
@@ -52,4 +56,33 @@ function sellSeat(Trip $trip, Seat $seat, Leg $leg): Reservation
 function seatNumbered(Trip $trip, string $number): Seat
 {
     return Seat::query()->where('vehicle_id', $trip->vehicle_id)->where('number', $number)->firstOrFail();
+}
+
+/**
+ * Aponta a conexão de locks para uma porta fechada, simulando o Redis fora do ar.
+ */
+function simulateRedisOutage(): void
+{
+    Redis::purge('locks');
+    config()->set('database.redis.locks.port', 1);
+    // O RedisManager guarda a configuração ao ser criado; recria-o.
+    app()->forgetInstance('redis');
+    Redis::clearResolvedInstance('redis');
+    app()->forgetInstance(SeatLockService::class);
+}
+
+function customer(?User $user = null): User
+{
+    $user ??= User::factory()->create();
+    Sanctum::actingAs($user);
+
+    return $user;
+}
+
+/**
+ * @return array<string, string>
+ */
+function cartHeaders(string $cartId = 'cart-0000-aaaa'): array
+{
+    return ['X-Cart-Id' => $cartId];
 }
