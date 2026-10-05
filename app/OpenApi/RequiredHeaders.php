@@ -49,7 +49,9 @@ final class RequiredHeaders
 
         $parameter = new Parameter($name, 'header');
         $parameter->required($required);
-        $parameter->setSchema(Schema::fromType($type));
+        $schema = Schema::fromType($type);
+        assert($schema instanceof Schema);
+        $parameter->setSchema($schema);
         $parameter->description($description);
 
         return $parameter;

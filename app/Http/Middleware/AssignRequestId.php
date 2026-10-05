@@ -32,6 +32,7 @@ final class AssignRequestId
         }
 
         $response = $next($request);
+        assert($response instanceof Response);
         $response->headers->set(self::HEADER, $id);
 
         return $response;

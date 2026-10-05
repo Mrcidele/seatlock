@@ -23,7 +23,7 @@ class ReservationFactory extends Factory
     {
         return [
             'order_id' => Order::factory(),
-            'trip_id' => fn (array $attributes): mixed => Order::query()->findOrFail($attributes['order_id'])->trip_id,
+            'trip_id' => fn (array $attributes): mixed => Order::query()->whereKey($attributes['order_id'])->value('trip_id'),
             'seat_id' => Seat::factory(),
             'passenger_id' => Passenger::factory(),
             'origin_index' => 0,

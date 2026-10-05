@@ -36,7 +36,7 @@ final readonly class AlternativeSeats
         $candidates = $this->availability->availableSeats($trip, $leg)
             ->reject(fn (Seat $seat): bool => in_array($seat->id, [...$lostSeatIds, ...$excludeSeatIds], true));
 
-        $locked = $this->locks->owners($trip->id, array_values($candidates->pluck('id')->map(fn (mixed $id): string => (string) $id)->all()), $leg);
+        $locked = $this->locks->owners($trip->id, array_values($candidates->map(fn (Seat $seat): string => $seat->id)->all()), $leg);
         $types = $lost->map(fn (Seat $seat): string => $seat->type->value)->unique()->all();
 
         $distance = function (Seat $candidate) use ($lost): int {

@@ -8,6 +8,7 @@ use App\Booking\LockOwner;
 use App\Booking\SeatMapBuilder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\SeatMapRequest;
+use App\Models\Seat;
 use App\Models\Trip;
 use App\Models\User;
 use App\SeatLock\SeatLockService;
@@ -29,7 +30,7 @@ class SeatMapController extends Controller
         $trip->load(['route.stops', 'vehicle.seats']);
         $leg = $request->legFor($trip);
 
-        $seatIds = array_values($trip->vehicle->seats->pluck('id')->map(fn (mixed $id): string => (string) $id)->all());
+        $seatIds = array_values($trip->vehicle->seats->map(fn (Seat $seat): string => $seat->id)->all());
         $user = auth('sanctum')->user();
         $cartId = $request->header(LockOwner::HEADER);
         $viewer = $user instanceof User && is_string($cartId) ? LockOwner::for($user, $cartId) : null;

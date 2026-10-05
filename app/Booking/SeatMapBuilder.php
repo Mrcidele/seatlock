@@ -78,7 +78,7 @@ final readonly class SeatMapBuilder
                             'status' => $status->value,
                             'held_by_you' => $status === SeatStatus::Locked
                                 && $viewerOwner !== null
-                                && ($lockOwners[$seat->id] ?? null) === $viewerOwner,
+                                && $lockOwners[$seat->id] === $viewerOwner,
                             'price' => $prices[$seat->type->value],
                         ];
                     }

@@ -21,7 +21,11 @@ class TripSeeder extends Seeder
         foreach (TravelRoute::query()->orderBy('code')->get() as $routeIndex => $route) {
             foreach (range(0, 6) as $day) {
                 foreach (['08:00', '14:30', '22:00'] as $slot => $time) {
-                    $vehicle = $vehicles[($routeIndex + $slot) % $vehicles->count()];
+                    $vehicle = $vehicles->get(($routeIndex + $slot) % $vehicles->count());
+
+                    if ($vehicle === null) {
+                        continue;
+                    }
                     $departure = CarbonImmutable::parse($start->addDays($day)->format('Y-m-d').' '.$time);
 
                     Trip::query()->firstOrCreate(

@@ -23,8 +23,8 @@ final class BookingReport
         $created = Order::query()->where('created_at', '>=', $from);
 
         $byStatus = (clone $created)->toBase()->select('status', DB::raw('count(*) as aggregate'))->groupBy('status')->pluck('aggregate', 'status');
-        $total = (int) $byStatus->sum();
-        $paid = (int) ($byStatus[OrderStatus::Paid->value] ?? 0) + (int) ($byStatus[OrderStatus::Refunded->value] ?? 0);
+        $total = self::int($byStatus->sum());
+        $paid = self::int($byStatus[OrderStatus::Paid->value] ?? 0) + self::int($byStatus[OrderStatus::Refunded->value] ?? 0);
 
         $timing = (clone $created)
             ->whereNotNull('paid_at')
@@ -36,12 +36,17 @@ final class BookingReport
             'period_hours' => (int) round($from->diffInHours(now())),
             'orders_created' => $total,
             'orders_paid' => $paid,
-            'orders_expired' => (int) ($byStatus[OrderStatus::Expired->value] ?? 0),
+            'orders_expired' => self::int($byStatus[OrderStatus::Expired->value] ?? 0),
             'orders_lost_to_conflict' => (clone $created)->where('cancellation_reason', 'seat_unavailable')->count(),
             'conversion_rate' => $total > 0 ? round($paid / $total, 4) : null,
             'avg_seconds_to_pay' => self::float($timing?->getAttribute('avg_seconds')),
             'p95_seconds_to_pay' => self::float($timing?->getAttribute('p95_seconds')),
         ];
+    }
+
+    private static function int(mixed $value): int
+    {
+        return is_numeric($value) ? (int) $value : 0;
     }
 
     private static function float(mixed $value): ?float

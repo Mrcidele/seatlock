@@ -10,6 +10,7 @@ use App\Models\Trip;
 use App\ValueObjects\Leg;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * Disponibilidade por trecho, consultada no banco (fonte da verdade).
@@ -26,7 +27,7 @@ final readonly class SeatAvailability
     {
         return Seat::query()
             ->where('vehicle_id', $trip->vehicle_id)
-            ->whereNotExists(function ($query) use ($trip, $leg): void {
+            ->whereNotExists(function (QueryBuilder $query) use ($trip, $leg): void {
                 $query->selectRaw('1')
                     ->from('seat_segments')
                     ->where('seat_segments.trip_id', $trip->id)
@@ -50,7 +51,9 @@ final readonly class SeatAvailability
 
         $sold = [];
         foreach ($ids as $id) {
-            $sold[(string) $id] = true;
+            if (is_string($id)) {
+                $sold[$id] = true;
+            }
         }
 
         return $sold;
@@ -66,9 +69,9 @@ final readonly class SeatAvailability
             return [];
         }
 
-        return array_values(array_map(
-            fn (mixed $id): string => (string) $id,
+        return array_values(array_filter(
             $this->segmentsInLeg($trip, $leg)->whereIn('seat_id', $seatIds)->distinct()->pluck('seat_id')->all(),
+            is_string(...),
         ));
     }
 

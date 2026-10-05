@@ -48,7 +48,9 @@ final class ProblemDetailsResponses
 
         $problem->setRequired(['type', 'title', 'status']);
 
-        $reference = $openApi->components->addSchema('ProblemDetails', Schema::fromType($problem));
+        $schema = Schema::fromType($problem);
+        assert($schema instanceof Schema);
+        $reference = $openApi->components->addSchema('ProblemDetails', $schema);
 
         foreach ($openApi->components->responses as $response) {
             $response->content = ['application/problem+json' => $reference];

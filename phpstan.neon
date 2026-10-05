@@ -8,3 +8,6 @@ parameters:
         - database
         - routes
     tmpDir: storage/framework/cache/phpstan
+    excludePaths:
+        # Migration publicada pelo laravel/pulse, mantida como veio do pacote.
+        - database/migrations/*_create_pulse_tables.php

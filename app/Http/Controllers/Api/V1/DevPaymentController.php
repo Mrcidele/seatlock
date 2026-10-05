@@ -23,7 +23,7 @@ class DevPaymentController extends Controller
 {
     public function __invoke(Request $request, string $payment, PaymentGatewayManager $gateways, IngestWebhook $ingest): JsonResponse
     {
-        $data = $request->validate(['status' => ['required', Rule::enum(PaymentStatus::class)]]);
+        $request->validate(['status' => ['required', Rule::enum(PaymentStatus::class)]]);
         $user = $request->user();
         assert($user instanceof User);
 
@@ -35,7 +35,7 @@ class DevPaymentController extends Controller
         $gateway = $gateways->gateway('fake');
         assert($gateway instanceof FakeGateway);
 
-        $webhook = $gateway->signedWebhook((string) $payment->external_id, PaymentStatus::from((string) $data['status']));
+        $webhook = $gateway->signedWebhook((string) $payment->external_id, PaymentStatus::from($request->string('status')->toString()));
         $simulated = Request::create('/api/v1/webhooks/fake', 'POST', server: [
             'CONTENT_TYPE' => 'application/json',
             'HTTP_X_FAKE_SIGNATURE' => $webhook['headers'][FakeGateway::SIGNATURE_HEADER],

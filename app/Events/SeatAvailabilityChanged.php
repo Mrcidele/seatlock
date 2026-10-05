@@ -38,7 +38,7 @@ abstract class SeatAvailabilityChanged implements ShouldBroadcast, ShouldDispatc
      */
     public static function forLeg(string $tripId, array $seatIds, Leg $leg): static
     {
-        return new static($tripId, array_values($seatIds), $leg->origin, $leg->destination);
+        return new static($tripId, $seatIds, $leg->origin, $leg->destination);
     }
 
     public function broadcastOn(): Channel

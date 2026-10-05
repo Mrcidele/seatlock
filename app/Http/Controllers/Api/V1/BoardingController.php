@@ -21,12 +21,16 @@ class BoardingController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->role->canValidateBoarding(), 403, 'Apenas operadores validam embarque.');
 
-        $data = $request->validate([
+        $request->validate([
             'code' => ['required', 'string', 'max:1000'],
             'trip_id' => ['nullable', 'string', 'ulid'],
         ]);
 
-        $ticket = $validate->handle((string) $data['code'], $user, isset($data['trip_id']) ? (string) $data['trip_id'] : null);
+        $ticket = $validate->handle(
+            $request->string('code')->toString(),
+            $user,
+            $request->filled('trip_id') ? $request->string('trip_id')->toString() : null,
+        );
         $reservation = $ticket->reservation;
 
         return new JsonResponse(['data' => [

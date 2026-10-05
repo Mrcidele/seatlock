@@ -22,8 +22,8 @@ class MetricsController extends Controller
         $user = $request->user();
         abort_unless($user instanceof User && $user->role === UserRole::Admin, 403);
 
-        $validated = $request->validate(['hours' => ['nullable', 'integer', 'min:1', 'max:720']]);
-        $hours = is_numeric($validated['hours'] ?? null) ? (int) $validated['hours'] : 24;
+        $request->validate(['hours' => ['nullable', 'integer', 'min:1', 'max:720']]);
+        $hours = $request->integer('hours', 24);
 
         return new JsonResponse(['data' => $report->since(now()->subHours($hours))]);
     }

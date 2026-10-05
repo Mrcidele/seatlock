@@ -31,7 +31,7 @@ class ExpireStaleOrders extends Command
             ->pluck('id');
 
         foreach ($ids as $id) {
-            if ($expireOrder->handle((string) $id)) {
+            if (is_string($id) && $expireOrder->handle($id)) {
                 $expired++;
             }
         }

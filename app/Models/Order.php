@@ -99,7 +99,7 @@ class Order extends Model
      */
     public function seatIds(): array
     {
-        return array_values($this->reservations->pluck('seat_id')->map(fn (mixed $id): string => (string) $id)->all());
+        return array_values($this->reservations->map(fn (Reservation $r): string => $r->seat_id)->all());
     }
 
     public function isExpiredAt(CarbonImmutable $moment): bool

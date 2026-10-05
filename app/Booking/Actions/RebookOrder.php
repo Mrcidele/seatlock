@@ -12,6 +12,7 @@ use App\Enums\OrderStatus;
 use App\Events\SeatReleased;
 use App\Events\SeatSold;
 use App\Models\Order;
+use App\Models\Reservation;
 use App\Models\Seat;
 use App\Models\SeatSegment;
 use App\Models\Ticket;
@@ -59,7 +60,7 @@ final readonly class RebookOrder
             throw new TripNotBookable;
         }
 
-        $reservationIds = $order->reservations->pluck('id')->map(fn (mixed $id): string => (string) $id)->sort()->values()->all();
+        $reservationIds = $order->reservations->map(fn (Reservation $r): string => $r->id)->sort()->values()->all();
         $requested = array_keys($seatByReservation);
         sort($requested);
 
