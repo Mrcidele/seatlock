@@ -6,7 +6,9 @@ namespace App\Models;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,6 +31,17 @@ use Illuminate\Database\Eloquent\Model;
 class IdempotencyKey extends Model
 {
     use HasUlids;
+    use MassPrunable;
+
+    /**
+     * Chaves ficam guardadas por 24 h, tempo de sobra para retries do cliente.
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder
+    {
+        return static::query()->where('created_at', '<', now()->subDay());
+    }
 
     /**
      * @return array<string, string>

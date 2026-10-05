@@ -86,3 +86,45 @@ function cartHeaders(string $cartId = 'cart-0000-aaaa'): array
 {
     return ['X-Cart-Id' => $cartId];
 }
+
+/**
+ * Fluxo completo via API: trava os assentos e cria o pedido.
+ *
+ * @param  list<string>  $seatNumbers
+ * @return array<string, mixed> JSON do pedido criado
+ */
+function placeOrder(Trip $trip, array $seatNumbers, ?Leg $leg = null, string $cartId = 'cart-0000-aaaa', ?string $idempotencyKey = null): array
+{
+    $leg ??= new Leg(0, 3);
+    $seatIds = array_map(fn (string $n): string => seatNumbered($trip, $n)->id, $seatNumbers);
+    $test = test();
+
+    $test->postJson("/api/v1/trips/{$trip->id}/locks", [
+        'origin' => $leg->origin, 'destination' => $leg->destination, 'seat_ids' => $seatIds,
+    ], cartHeaders($cartId))->assertCreated();
+
+    return $test->postJson('/api/v1/orders', orderPayload($trip, $seatIds, $leg), [
+        ...cartHeaders($cartId),
+        'Idempotency-Key' => $idempotencyKey ?? (string) Illuminate\Support\Str::uuid(),
+    ])->assertCreated()->json('data');
+}
+
+/**
+ * @param  list<string>  $seatIds
+ * @return array<string, mixed>
+ */
+function orderPayload(Trip $trip, array $seatIds, ?Leg $leg = null): array
+{
+    $leg ??= new Leg(0, 3);
+
+    return [
+        'trip_id' => $trip->id,
+        'origin' => $leg->origin,
+        'destination' => $leg->destination,
+        'passengers' => array_map(fn (string $seatId): array => [
+            'seat_id' => $seatId,
+            'name' => 'Passageiro '.substr($seatId, -4),
+            'document' => '123.456.789-09',
+        ], $seatIds),
+    ];
+}

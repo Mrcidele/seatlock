@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\SeatLockController;
 use App\Http\Controllers\Api\V1\SeatMapController;
 use App\Http\Controllers\Api\V1\TripController;
@@ -25,6 +26,15 @@ Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function ():
         Route::middleware('throttle:seat-locks')->group(function (): void {
             Route::post('trips/{trip}/locks', [SeatLockController::class, 'store'])->name('trips.locks.store');
             Route::delete('trips/{trip}/locks', [SeatLockController::class, 'destroy'])->name('trips.locks.destroy');
+        });
+
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+
+        Route::middleware('throttle:orders')->group(function (): void {
+            Route::post('orders', [OrderController::class, 'store'])->middleware('idempotent')->name('orders.store');
+            Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+            Route::post('orders/{order}/renew', [OrderController::class, 'renew'])->name('orders.renew');
         });
     });
 });
