@@ -27,10 +27,10 @@ it('throws on invalid transitions and keeps the state untouched', function (Orde
     [OrderStatus::Refunded, OrderStatus::Cancelled],
 ]);
 
-it('renders invalid transitions as 409 problems on the api', function (): void {
+it('rejects operations not allowed in the current state with 409 problems', function (): void {
     customer();
     $order = placeOrder(App\Models\Trip::factory()->create(), ['01']);
-    Order::query()->whereKey($order['id'])->update(['status' => OrderStatus::Paid]);
+    Order::query()->whereKey($order['id'])->update(['status' => OrderStatus::Expired]);
 
     $this->postJson("/api/v1/orders/{$order['id']}/cancel")
         ->assertStatus(409)

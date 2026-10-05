@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { ApiProblem, newIdempotencyKey } from '@/api/client';
+import { ApiProblem, download, newIdempotencyKey } from '@/api/client';
 import { endpoints } from '@/api/endpoints';
 import type { Order } from '@/api/types';
 import CountdownTimer from '@/components/CountdownTimer.vue';
@@ -50,6 +50,9 @@ const payPix = () => run(() => endpoints.pay(orderId.value, { method: 'pix' }, n
 const payCard = () => run(() => endpoints.pay(orderId.value, { method: 'card', card_token: cardToken.value }, newIdempotencyKey()));
 const renew = () => run(() => endpoints.renewOrder(orderId.value));
 const cancel = () => run(() => endpoints.cancelOrder(orderId.value));
+const confirmCancel = () => {
+    if (window.confirm('Cancelar a passagem? O reembolso segue a política de antecedência.')) void cancel();
+};
 
 async function simulatePix(): Promise<void> {
     if (!pendingPix.value) return;
@@ -78,7 +81,12 @@ async function simulatePix(): Promise<void> {
                     <span>Assento {{ r.seat.number }} · {{ r.passenger.name }}</span>
                     <span class="flex gap-3">
                         {{ r.price.formatted }}
-                        <a v-if="r.ticket_id && order.status === 'paid'" :href="`/api/v1/tickets/${r.ticket_id}/pdf`" class="text-blue-700 underline">Bilhete</a>
+                        <button
+                            v-if="r.ticket_id && order.status === 'paid'"
+                            type="button"
+                            class="text-blue-700 underline"
+                            @click="download(`/tickets/${r.ticket_id}/pdf`, `bilhete-${r.seat.number}.pdf`)"
+                        >Bilhete (PDF)</button>
                     </span>
                 </li>
             </ul>
@@ -112,5 +120,12 @@ async function simulatePix(): Promise<void> {
 
             <button type="button" :disabled="busy" class="text-sm text-red-700 underline" @click="cancel">Desistir e liberar assentos</button>
         </template>
+
+        <p v-if="order.status === 'refunded'" class="rounded-lg bg-slate-100 p-3 text-sm">Reembolso de {{ order.refunded.formatted }} solicitado ao meio de pagamento.</p>
+
+        <div v-if="order.status === 'paid'" class="text-sm">
+            <button type="button" :disabled="busy" class="text-red-700 underline" @click="confirmCancel">Cancelar passagem</button>
+            <p class="mt-1 text-slate-500">Reembolso: 100% até 72 h antes do embarque, 95% até 24 h, 80% até 3 h. Depois disso não é possível cancelar.</p>
+        </div>
     </section>
 </template>

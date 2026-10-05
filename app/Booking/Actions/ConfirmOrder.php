@@ -6,9 +6,9 @@ namespace App\Booking\Actions;
 
 use App\Booking\ConfirmationOutcome;
 use App\Enums\OrderStatus;
+use App\Enums\ReservationStatus;
 use App\Events\SeatReleased;
 use App\Events\SeatSold;
-use App\Enums\ReservationStatus;
 use App\Models\Order;
 use App\Models\Reservation;
 use App\Models\SeatSegment;

@@ -83,3 +83,14 @@ function findServerTime(payload: unknown): string | null {
 export function newIdempotencyKey(): string {
     return crypto.randomUUID();
 }
+
+/** Download autenticado (o token não vai em links <a href>). */
+export async function download(path: string, filename: string): Promise<void> {
+    const response = await fetch(`/api/v1${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    if (!response.ok) throw new Error(`Falha ao baixar (${response.status})`);
+
+    const url = URL.createObjectURL(await response.blob());
+    const link = Object.assign(document.createElement('a'), { href: url, download: filename });
+    link.click();
+    URL.revokeObjectURL(url);
+}

@@ -11,6 +11,7 @@ use App\OpenApi\RequiredHeaders;
 use App\SeatLock\RedisSeatLockService;
 use App\SeatLock\ResilientSeatLockService;
 use App\SeatLock\SeatLockService;
+use App\Tickets\TicketSigner;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
@@ -42,6 +43,12 @@ class AppServiceProvider extends ServiceProvider
             return config('seatlock.locks.fail_open') === true
                 ? new ResilientSeatLockService($redis, $app->make(LoggerInterface::class))
                 : $redis;
+        });
+
+        $this->app->singleton(TicketSigner::class, function (): TicketSigner {
+            $key = config('seatlock.tickets.signing_key');
+
+            return new TicketSigner(is_string($key) ? $key : '');
         });
     }
 

@@ -174,6 +174,135 @@
                 }
             }
         },
+        "/v1/boarding/validate": {
+            "post": {
+                "operationId": "v1.boarding.validate",
+                "summary": "Valida o QR Code no embarque e marca o bilhete como usado (uso \u00fanico).\nRestrito a operadores",
+                "tags": [
+                    "Boarding"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "maxLength": 1000
+                                    },
+                                    "trip_id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "code"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "valid": {
+                                                    "type": "boolean"
+                                                },
+                                                "ticket_id": {
+                                                    "type": "string"
+                                                },
+                                                "used_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "passenger": {
+                                                    "type": "string"
+                                                },
+                                                "seat": {
+                                                    "type": "string"
+                                                },
+                                                "trip_id": {
+                                                    "type": "string"
+                                                },
+                                                "leg": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "origin": {
+                                                            "type": "integer"
+                                                        },
+                                                        "destination": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "origin",
+                                                        "destination"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "valid",
+                                                "ticket_id",
+                                                "used_at",
+                                                "passenger",
+                                                "seat",
+                                                "trip_id",
+                                                "leg"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "An error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview.",
+                                            "examples": [
+                                                "Apenas operadores validam embarque."
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/v1/orders": {
             "get": {
                 "operationId": "v1.orders.index",
@@ -441,7 +570,7 @@
         "/v1/orders/{order}/cancel": {
             "post": {
                 "operationId": "v1.orders.cancel",
-                "summary": "Desiste de um pedido ainda n\u00e3o pago e libera os assentos",
+                "summary": "Cancela o pedido. Antes do pagamento libera os assentos; depois do\npagamento estorna conforme a anteced\u00eancia do embarque",
                 "tags": [
                     "Order"
                 ],
@@ -518,6 +647,61 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders/{order}/rebook": {
+            "post": {
+                "operationId": "v1.orders.rebook",
+                "summary": "Remarca o pedido pago para outra viagem da mesma linha e trecho",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RebookOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
@@ -866,6 +1050,113 @@
                     }
                 },
                 "security": []
+            }
+        },
+        "/v1/tickets/{ticket}": {
+            "get": {
+                "operationId": "v1.tickets.show",
+                "summary": "Bilhete com o conte\u00fado assinado do QR Code",
+                "tags": [
+                    "Ticket"
+                ],
+                "parameters": [
+                    {
+                        "name": "ticket",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "reservation_id": {
+                                                    "type": "string"
+                                                },
+                                                "qr_code": {
+                                                    "type": "string"
+                                                },
+                                                "issued_at": {
+                                                    "type": "string"
+                                                },
+                                                "used_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "valid": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "reservation_id",
+                                                "qr_code",
+                                                "issued_at",
+                                                "used_at",
+                                                "valid"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/tickets/{ticket}/pdf": {
+            "get": {
+                "operationId": "v1.tickets.pdf",
+                "summary": "Bilhete em PDF com QR Code assinado (HMAC)",
+                "tags": [
+                    "Ticket"
+                ],
+                "parameters": [
+                    {
+                        "name": "ticket",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
             }
         },
         "/v1/trips": {
@@ -1418,6 +1709,39 @@
                     "status"
                 ],
                 "title": "ProblemDetails"
+            },
+            "RebookOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "trip_id": {
+                        "type": "string"
+                    },
+                    "seats": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "reservation_id": {
+                                    "type": "string"
+                                },
+                                "seat_id": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "reservation_id",
+                                "seat_id"
+                            ]
+                        },
+                        "minItems": 1,
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "trip_id",
+                    "seats"
+                ],
+                "title": "RebookOrderRequest"
             },
             "RegisterRequest": {
                 "type": "object",

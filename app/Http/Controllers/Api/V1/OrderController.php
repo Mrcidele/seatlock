@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Booking\Actions\CancelPaidOrder;
 use App\Booking\Actions\CancelPendingOrder;
 use App\Booking\Actions\CreateOrder;
+use App\Booking\Actions\RebookOrder;
 use App\Booking\Actions\RenewOrder;
 use App\Booking\LockOwner;
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\RebookOrderRequest;
 use App\Http\Requests\Api\V1\StoreOrderRequest;
 use App\Http\Resources\Api\V1\OrderResource;
 use App\Models\Order;
@@ -56,11 +60,28 @@ class OrderController extends Controller
     }
 
     /**
-     * Desiste de um pedido ainda não pago e libera os assentos.
+     * Cancela o pedido. Antes do pagamento libera os assentos; depois do
+     * pagamento estorna conforme a antecedência do embarque.
      */
-    public function cancel(Request $request, string $order, CancelPendingOrder $cancel): OrderResource
+    public function cancel(Request $request, string $order, CancelPendingOrder $cancelPending, CancelPaidOrder $cancelPaid): OrderResource
     {
-        return new OrderResource($cancel->handle($this->findOwned($request, $order)));
+        $order = $this->findOwned($request, $order);
+
+        return new OrderResource($order->status === OrderStatus::Paid
+            ? $cancelPaid->handle($order)
+            : $cancelPending->handle($order));
+    }
+
+    /**
+     * Remarca o pedido pago para outra viagem da mesma linha e trecho.
+     */
+    public function rebook(RebookOrderRequest $request, string $order, RebookOrder $rebook): OrderResource
+    {
+        return new OrderResource($rebook->handle(
+            $this->findOwned($request, $order),
+            $request->trip(),
+            $request->seatByReservation(),
+        ));
     }
 
     /**

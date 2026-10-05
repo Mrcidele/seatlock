@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BoardingController;
 use App\Http\Controllers\Api\V1\DevPaymentController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SeatLockController;
 use App\Http\Controllers\Api\V1\SeatMapController;
+use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\TripController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
@@ -43,8 +45,13 @@ Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function ():
             Route::post('orders', [OrderController::class, 'store'])->middleware('idempotent')->name('orders.store');
             Route::post('orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
             Route::post('orders/{order}/renew', [OrderController::class, 'renew'])->name('orders.renew');
+            Route::post('orders/{order}/rebook', [OrderController::class, 'rebook'])->name('orders.rebook');
             Route::post('orders/{order}/payments', [PaymentController::class, 'store'])->middleware('idempotent')->name('orders.payments.store');
         });
+
+        Route::get('tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
+        Route::get('tickets/{ticket}/pdf', [TicketController::class, 'pdf'])->name('tickets.pdf');
+        Route::post('boarding/validate', BoardingController::class)->name('boarding.validate');
 
         if (app()->environment('local', 'testing')) {
             Route::post('dev/payments/{payment}/simulate', DevPaymentController::class)->name('dev.payments.simulate');

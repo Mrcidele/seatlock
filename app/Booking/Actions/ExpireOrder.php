@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Booking\Actions;
 
 use App\Enums\OrderStatus;
-use App\Events\SeatReleased;
 use App\Enums\ReservationStatus;
+use App\Events\SeatReleased;
 use App\Models\Order;
 use App\SeatLock\SeatLockService;
 use Illuminate\Support\Facades\DB;
