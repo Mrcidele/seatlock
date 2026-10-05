@@ -4,17 +4,26 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
+use App\Models\User;
+use App\OpenApi\ProblemDetailsResponses;
+use App\OpenApi\RequiredHeaders;
 use App\SeatLock\RedisSeatLockService;
 use App\SeatLock\ResilientSeatLockService;
 use App\SeatLock\SeatLockService;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Scramble;
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\SecurityScheme;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
@@ -43,6 +52,21 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands($this->app->isProduction());
 
         $this->configureRateLimiting();
+        $this->configureApiDocs();
+    }
+
+    private function configureApiDocs(): void
+    {
+        // Documentação aberta fora de produção; em produção só para admins.
+        Gate::define('viewApiDocs', fn (?User $user = null): bool => ! $this->app->isProduction() || $user?->role === UserRole::Admin);
+
+        Scramble::configure()
+            ->routes(fn (Route $route): bool => str_starts_with($route->uri, 'api/v1') && ! str_starts_with($route->uri, 'api/v1/dev'))
+            ->withDocumentTransformers(function (OpenApi $openApi): void {
+                $openApi->secure(SecurityScheme::http('bearer'));
+                (new ProblemDetailsResponses)($openApi);
+            })
+            ->withOperationTransformers(new RequiredHeaders);
     }
 
     private function configureRateLimiting(): void

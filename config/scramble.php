@@ -31,7 +31,7 @@ return [
     /*
      * The path where your OpenAPI specification will be exported.
      */
-    'export_path' => 'api.json',
+    'export_path' => 'docs/openapi.json',
 
     /*
      * Cache configuration for the generated OpenAPI document.

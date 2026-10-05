@@ -1,0 +1,1828 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "SeatLock",
+        "version": "0.0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api"
+        }
+    ],
+    "security": [
+        {
+            "http": []
+        }
+    ],
+    "paths": {
+        "/v1/auth/register": {
+            "post": {
+                "operationId": "v1.auth.register",
+                "summary": "Cria a conta e devolve um token Bearer",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                }
+                                            },
+                                            "required": [
+                                                "token",
+                                                "user"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/auth/login": {
+            "post": {
+                "operationId": "v1.auth.login",
+                "summary": "Troca e-mail e senha por um token Bearer",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": "string"
+                                                },
+                                                "user": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                }
+                                            },
+                                            "required": [
+                                                "token",
+                                                "user"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "operationId": "v1.auth.me",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "operationId": "v1.auth.logout",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders": {
+            "get": {
+                "operationId": "v1.orders.index",
+                "summary": "Pedidos do usu\u00e1rio autenticado",
+                "tags": [
+                    "Order"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/OrderResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "first": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "last": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "first",
+                                                "last",
+                                                "prev",
+                                                "next"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "from": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "minimum": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                },
+                                                "links": {
+                                                    "type": "array",
+                                                    "description": "Generated paginator links.",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "url": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "label": {
+                                                                "type": "string"
+                                                            },
+                                                            "active": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "url",
+                                                            "label",
+                                                            "active"
+                                                        ]
+                                                    }
+                                                },
+                                                "path": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Base path for paginator generated URLs."
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "description": "Number of items shown per page.",
+                                                    "minimum": 0
+                                                },
+                                                "to": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ],
+                                                    "description": "Number of the last item in the slice.",
+                                                    "minimum": 1
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "description": "Total number of items being paginated.",
+                                                    "minimum": 0
+                                                }
+                                            },
+                                            "required": [
+                                                "current_page",
+                                                "from",
+                                                "last_page",
+                                                "links",
+                                                "path",
+                                                "per_page",
+                                                "to",
+                                                "total"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "v1.orders.store",
+                "description": "Exige o header Idempotency-Key: repetir a mesma requisi\u00e7\u00e3o devolve o\nmesmo pedido em vez de criar outro.",
+                "summary": "Cria um pedido Pending para os assentos travados pelo carrinho",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Chave \u00fanica por opera\u00e7\u00e3o. Repetir a requisi\u00e7\u00e3o com a mesma chave devolve a mesma resposta.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "9f1c2a7e-4b6d-4f3a-9c8e-1a2b3c4d5e6f"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Id",
+                        "in": "header",
+                        "required": true,
+                        "description": "Identificador do carrinho (8 a 64 caracteres). Dono dos locks tempor\u00e1rios.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "cart-7d1e9b20"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreOrderRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders/{order}": {
+            "get": {
+                "operationId": "v1.orders.show",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders/{order}/cancel": {
+            "post": {
+                "operationId": "v1.orders.cancel",
+                "summary": "Desiste de um pedido ainda n\u00e3o pago e libera os assentos",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders/{order}/renew": {
+            "post": {
+                "operationId": "v1.orders.renew",
+                "summary": "Renova o prazo de pagamento (e o lock) uma \u00fanica vez",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/v1/orders/{order}/payments": {
+            "post": {
+                "operationId": "v1.orders.payments.store",
+                "summary": "Paga um pedido pendente com Pix (devolve o copia e cola) ou cart\u00e3o\ntokenizado no cliente. Exige Idempotency-Key",
+                "tags": [
+                    "Payment"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true,
+                        "description": "Chave \u00fanica por opera\u00e7\u00e3o. Repetir a requisi\u00e7\u00e3o com a mesma chave devolve a mesma resposta.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "9f1c2a7e-4b6d-4f3a-9c8e-1a2b3c4d5e6f"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StorePaymentRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`OrderResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/OrderResource"
+                                        },
+                                        "payment_id": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "payment_id"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/trips/{trip}/locks": {
+            "post": {
+                "operationId": "v1.trips.locks.store",
+                "summary": "Trava temporariamente os assentos para o carrinho (tudo ou nada)",
+                "tags": [
+                    "SeatLock"
+                ],
+                "parameters": [
+                    {
+                        "name": "trip",
+                        "in": "path",
+                        "required": true,
+                        "description": "The trip ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Id",
+                        "in": "header",
+                        "required": true,
+                        "description": "Identificador do carrinho (8 a 64 caracteres). Dono dos locks tempor\u00e1rios.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "cart-7d1e9b20"
+                            ]
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LockSeatsRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "trip_id": {
+                                                    "type": "string"
+                                                },
+                                                "seat_ids": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "leg": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "origin": {
+                                                            "type": "integer"
+                                                        },
+                                                        "destination": {
+                                                            "type": "integer"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "origin",
+                                                        "destination"
+                                                    ]
+                                                },
+                                                "expires_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "server_time": {
+                                                    "type": "string"
+                                                },
+                                                "degraded": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": [
+                                                "trip_id",
+                                                "seat_ids",
+                                                "leg",
+                                                "expires_at",
+                                                "server_time",
+                                                "degraded"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "v1.trips.locks.destroy",
+                "summary": "Libera os assentos travados pelo carrinho",
+                "tags": [
+                    "SeatLock"
+                ],
+                "parameters": [
+                    {
+                        "name": "trip",
+                        "in": "path",
+                        "required": true,
+                        "description": "The trip ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "origin",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "seat_ids[]",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Id",
+                        "in": "header",
+                        "required": true,
+                        "description": "Identificador do carrinho (8 a 64 caracteres). Dono dos locks tempor\u00e1rios.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "cart-7d1e9b20"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/trips/{trip}/seat-map": {
+            "get": {
+                "operationId": "v1.trips.seat-map",
+                "description": "Vendidos v\u00eam do banco; travados v\u00eam do Redis. Com token e X-Cart-Id,\nos assentos travados pelo pr\u00f3prio carrinho v\u00eam com held_by_you = true.",
+                "summary": "Mapa de assentos da viagem para o trecho informado",
+                "tags": [
+                    "SeatMap"
+                ],
+                "parameters": [
+                    {
+                        "name": "trip",
+                        "in": "path",
+                        "required": true,
+                        "description": "The trip ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "origin",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Id",
+                        "in": "header",
+                        "description": "Identificador do carrinho (8 a 64 caracteres). Dono dos locks tempor\u00e1rios.",
+                        "schema": {
+                            "type": "string",
+                            "examples": [
+                                "cart-7d1e9b20"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "server_time": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "server_time"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/v1/trips": {
+            "get": {
+                "operationId": "v1.trips.index",
+                "summary": "Busca viagens por cidade de origem/destino e data",
+                "tags": [
+                    "Trip"
+                ],
+                "parameters": [
+                    {
+                        "name": "origin",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `TripSearchResultResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TripSearchResultResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/v1/trips/{trip}": {
+            "get": {
+                "operationId": "v1.trips.show",
+                "tags": [
+                    "Trip"
+                ],
+                "parameters": [
+                    {
+                        "name": "trip",
+                        "in": "path",
+                        "required": true,
+                        "description": "The trip ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`TripResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/TripResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/v1/webhooks/{provider}": {
+            "post": {
+                "operationId": "v1.webhooks",
+                "description": "Responde 202 ap\u00f3s gravar o evento; o processamento roda na fila.\nEventos repetidos respondem 200 sem reprocessar.",
+                "summary": "Recebe notifica\u00e7\u00f5es dos provedores de pagamento",
+                "tags": [
+                    "Webhook"
+                ],
+                "parameters": [
+                    {
+                        "name": "provider",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                },
+                "security": []
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer"
+            }
+        },
+        "schemas": {
+            "LockSeatsRequest": {
+                "type": "object",
+                "properties": {
+                    "origin": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "destination": {
+                        "type": "integer"
+                    },
+                    "seat_ids": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1,
+                        "maxItems": 6,
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "origin",
+                    "destination",
+                    "seat_ids"
+                ],
+                "title": "LockSeatsRequest"
+            },
+            "LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "device_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "title": "LoginRequest"
+            },
+            "Money": {
+                "type": "object",
+                "properties": {
+                    "cents": {
+                        "type": "integer"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "formatted": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "cents",
+                    "currency",
+                    "formatted"
+                ],
+                "title": "Money"
+            },
+            "OrderResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "trip_id": {
+                        "type": "string"
+                    },
+                    "leg": {
+                        "type": "object",
+                        "properties": {
+                            "origin": {
+                                "type": "integer"
+                            },
+                            "destination": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "origin",
+                            "destination"
+                        ]
+                    },
+                    "total": {
+                        "$ref": "#/components/schemas/Money"
+                    },
+                    "refunded": {
+                        "$ref": "#/components/schemas/Money"
+                    },
+                    "expires_at": {
+                        "type": "string"
+                    },
+                    "server_time": {
+                        "type": "string"
+                    },
+                    "renewals_left": {},
+                    "paid_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "cancellation_reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "reservations": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "seat": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "number": {
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "deck": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "number",
+                                        "type",
+                                        "deck"
+                                    ]
+                                },
+                                "passenger": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "document": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "document"
+                                    ]
+                                },
+                                "price": {
+                                    "$ref": "#/components/schemas/Money"
+                                },
+                                "ticket_id": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "status",
+                                "seat",
+                                "passenger",
+                                "price",
+                                "ticket_id"
+                            ]
+                        }
+                    },
+                    "payments": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "order_id": {
+                                    "type": "string"
+                                },
+                                "gateway": {
+                                    "type": "string"
+                                },
+                                "method": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string"
+                                },
+                                "amount": {
+                                    "$ref": "#/components/schemas/Money"
+                                },
+                                "refunded": {
+                                    "$ref": "#/components/schemas/Money"
+                                },
+                                "pix": {
+                                    "type": [
+                                        "object",
+                                        "null"
+                                    ],
+                                    "properties": {
+                                        "copy_paste": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "expires_at": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "copy_paste",
+                                        "expires_at"
+                                    ]
+                                },
+                                "card": {
+                                    "type": [
+                                        "object",
+                                        "null"
+                                    ],
+                                    "properties": {
+                                        "brand": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "last_four": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "brand",
+                                        "last_four"
+                                    ]
+                                },
+                                "failure_reason": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "approved_at": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "order_id",
+                                "gateway",
+                                "method",
+                                "status",
+                                "amount",
+                                "refunded",
+                                "pix",
+                                "card",
+                                "failure_reason",
+                                "approved_at"
+                            ]
+                        }
+                    },
+                    "created_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "status",
+                    "trip_id",
+                    "leg",
+                    "total",
+                    "refunded",
+                    "expires_at",
+                    "server_time",
+                    "renewals_left",
+                    "paid_at",
+                    "cancellation_reason",
+                    "reservations",
+                    "payments",
+                    "created_at"
+                ],
+                "title": "OrderResource"
+            },
+            "PaymentMethod": {
+                "type": "string",
+                "enum": [
+                    "pix",
+                    "card"
+                ],
+                "title": "PaymentMethod"
+            },
+            "ProblemDetails": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "URI que identifica o tipo do problema."
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Resumo leg\u00edvel do problema."
+                    },
+                    "status": {
+                        "type": "integer",
+                        "description": "Status HTTP."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Explica\u00e7\u00e3o desta ocorr\u00eancia."
+                    },
+                    "instance": {
+                        "type": "string",
+                        "description": "URI da requisi\u00e7\u00e3o que falhou."
+                    },
+                    "errors": {
+                        "type": "object",
+                        "description": "Erros de valida\u00e7\u00e3o por campo (422).",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "conflicting_seat_ids": {
+                        "type": "array",
+                        "description": "Assentos indispon\u00edveis (409 seat-unavailable).",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "alternatives": {
+                        "type": "array",
+                        "description": "Sugest\u00f5es de assentos livres parecidos (409 seat-unavailable).",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "number": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                },
+                                "deck": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "type",
+                    "title",
+                    "status"
+                ],
+                "title": "ProblemDetails"
+            },
+            "RegisterRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "device_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    }
+                },
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "title": "RegisterRequest"
+            },
+            "StoreOrderRequest": {
+                "type": "object",
+                "properties": {
+                    "trip_id": {
+                        "type": "string"
+                    },
+                    "origin": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "destination": {
+                        "type": "integer"
+                    },
+                    "passengers": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "seat_id": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 120
+                                },
+                                "document": {
+                                    "type": "string",
+                                    "pattern": "^[0-9A-Za-z.\\-\\/]{5,20}$"
+                                },
+                                "email": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "email",
+                                    "maxLength": 255
+                                },
+                                "phone": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 20
+                                }
+                            },
+                            "required": [
+                                "seat_id",
+                                "name",
+                                "document"
+                            ]
+                        },
+                        "minItems": 1,
+                        "maxItems": 6,
+                        "uniqueItems": true
+                    }
+                },
+                "required": [
+                    "trip_id",
+                    "origin",
+                    "destination",
+                    "passengers"
+                ],
+                "title": "StoreOrderRequest"
+            },
+            "StorePaymentRequest": {
+                "type": "object",
+                "properties": {
+                    "method": {
+                        "$ref": "#/components/schemas/PaymentMethod"
+                    },
+                    "card_token": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
+                    },
+                    "card_brand": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 30
+                    },
+                    "card_number": {
+                        "type": "string"
+                    },
+                    "number": {
+                        "type": "string"
+                    },
+                    "cvv": {
+                        "type": "string"
+                    },
+                    "cvc": {
+                        "type": "string"
+                    },
+                    "security_code": {
+                        "type": "string"
+                    },
+                    "expiry": {
+                        "type": "string"
+                    },
+                    "expiration_date": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "method"
+                ],
+                "title": "StorePaymentRequest"
+            },
+            "TripResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "departure_at": {
+                        "type": "string"
+                    },
+                    "route": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "code",
+                            "name"
+                        ]
+                    },
+                    "vehicle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "stops": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "index": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "city": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "departure_at": {
+                                    "type": "string"
+                                },
+                                "fare_from_origin": {
+                                    "$ref": "#/components/schemas/Money"
+                                }
+                            },
+                            "required": [
+                                "index",
+                                "name",
+                                "city",
+                                "state",
+                                "departure_at",
+                                "fare_from_origin"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "status",
+                    "departure_at",
+                    "route",
+                    "vehicle",
+                    "stops"
+                ],
+                "title": "TripResource"
+            },
+            "TripSearchResultResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "departure_at": {
+                        "type": "string"
+                    },
+                    "route": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "code": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "code",
+                            "name"
+                        ]
+                    },
+                    "vehicle": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "id",
+                            "name"
+                        ]
+                    },
+                    "stops": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "index": {
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "city": {
+                                    "type": "string"
+                                },
+                                "state": {
+                                    "type": "string"
+                                },
+                                "departure_at": {
+                                    "type": "string"
+                                },
+                                "fare_from_origin": {
+                                    "$ref": "#/components/schemas/Money"
+                                }
+                            },
+                            "required": [
+                                "index",
+                                "name",
+                                "city",
+                                "state",
+                                "departure_at",
+                                "fare_from_origin"
+                            ]
+                        }
+                    },
+                    "leg": {
+                        "type": "object",
+                        "properties": {
+                            "origin": {
+                                "type": "integer"
+                            },
+                            "destination": {
+                                "type": "integer"
+                            }
+                        },
+                        "required": [
+                            "origin",
+                            "destination"
+                        ]
+                    },
+                    "available_seats": {
+                        "type": "integer"
+                    },
+                    "from_price": {
+                        "$ref": "#/components/schemas/Money"
+                    }
+                },
+                "required": [
+                    "id",
+                    "status",
+                    "departure_at",
+                    "route",
+                    "vehicle",
+                    "stops",
+                    "leg",
+                    "available_seats",
+                    "from_price"
+                ],
+                "title": "TripSearchResultResource"
+            },
+            "UserResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "role"
+                ],
+                "title": "UserResource"
+            }
+        },
+        "responses": {
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ProblemDetails"
+                        }
+                    }
+                }
+            },
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ProblemDetails"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
