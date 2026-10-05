@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BoardingController;
 use App\Http\Controllers\Api\V1\DevPaymentController;
+use App\Http\Controllers\Api\V1\MetricsController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SeatLockController;
@@ -52,6 +53,7 @@ Route::prefix('v1')->name('v1.')->middleware('throttle:api')->group(function ():
         Route::get('tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
         Route::get('tickets/{ticket}/pdf', [TicketController::class, 'pdf'])->name('tickets.pdf');
         Route::post('boarding/validate', BoardingController::class)->name('boarding.validate');
+        Route::get('admin/metrics', MetricsController::class)->name('admin.metrics');
 
         if (app()->environment('local', 'testing')) {
             Route::post('dev/payments/{payment}/simulate', DevPaymentController::class)->name('dev.payments.simulate');

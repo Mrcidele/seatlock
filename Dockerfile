@@ -67,4 +67,6 @@ USER www-data
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=5 CMD curl -fsS http://127.0.0.1:8000/up || exit 1
 
+COPY --chmod=755 docker/release.sh /usr/local/bin/release
+
 CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000", "--workers=auto", "--max-requests=1000"]

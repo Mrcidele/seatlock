@@ -100,6 +100,9 @@ return [
 
     'waits' => [
         'redis:default' => 60,
+        'redis:payments' => 30,
+        'redis:webhooks' => 30,
+        'redis:orders' => 60,
     ],
 
     /*
@@ -198,35 +201,54 @@ return [
     |
     */
 
+    // Filas separadas por criticidade: pagamentos/webhooks/expiração não
+    // podem esperar atrás de broadcasts ou jobs genéricos.
     'defaults' => [
-        'supervisor-1' => [
+        'critical' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['payments', 'webhooks', 'orders'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
-            'maxProcesses' => 1,
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
             'timeout' => 60,
+            'nice' => 0,
+        ],
+        'background' => [
+            'connection' => 'redis',
+            'queue' => ['broadcasts', 'default'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'size',
+            'minProcesses' => 1,
+            'maxProcesses' => 2,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 3,
+            'timeout' => 30,
             'nice' => 0,
         ],
     ],
 
     'environments' => [
         'production' => [
-            'supervisor-1' => [
+            'critical' => [
                 'maxProcesses' => 10,
-                'balanceMaxShift' => 1,
+                'balanceMaxShift' => 2,
                 'balanceCooldown' => 3,
+            ],
+            'background' => [
+                'maxProcesses' => 6,
             ],
         ],
 
         'local' => [
-            'supervisor-1' => [
-                'maxProcesses' => 3,
-            ],
+            'critical' => ['maxProcesses' => 2],
+            'background' => ['maxProcesses' => 2],
         ],
     ],
 

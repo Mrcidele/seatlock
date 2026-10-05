@@ -13,6 +13,7 @@ use App\Models\Order;
 use App\Models\Reservation;
 use App\Models\SeatSegment;
 use App\Models\Ticket;
+use App\Observability\BookingMetrics;
 use App\SeatLock\SeatLockService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -71,6 +72,12 @@ final readonly class ConfirmOrder
             // Vendido (ou perdido): o lock temporário não serve mais para nada.
             $this->locks->release($order->trip_id, $order->seatIds(), $order->leg(), $order->lock_owner);
         }
+
+        match ($outcome) {
+            ConfirmationOutcome::Confirmed => BookingMetrics::orderPaid($order),
+            ConfirmationOutcome::SeatsTaken => BookingMetrics::seatsTakenAtConfirmation(),
+            default => null,
+        };
 
         match ($outcome) {
             ConfirmationOutcome::Confirmed => event(SeatSold::forLeg($order->trip_id, $order->seatIds(), $order->leg())),

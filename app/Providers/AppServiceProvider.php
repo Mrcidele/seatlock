@@ -20,14 +20,19 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -60,6 +65,26 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiting();
         $this->configureApiDocs();
+        $this->configureHealthChecks();
+
+        Gate::define('viewPulse', fn (?User $user = null): bool => $this->app->isLocal() || $user?->role === UserRole::Admin);
+    }
+
+    /**
+     * GET /up falha (500) se o PostgreSQL estiver fora. O Redis é só
+     * otimização: fora do ar, a aplicação segue (degradada) e só registramos.
+     */
+    private function configureHealthChecks(): void
+    {
+        Event::listen(DiagnosingHealth::class, function (): void {
+            DB::connection()->select('select 1');
+
+            try {
+                Redis::connection('locks')->ping();
+            } catch (Throwable $e) {
+                Log::warning('health.redis_unavailable', ['error' => $e->getMessage()]);
+            }
+        });
     }
 
     private function configureApiDocs(): void

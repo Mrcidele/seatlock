@@ -22,6 +22,7 @@ use App\Models\Reservation;
 use App\Models\Seat;
 use App\Models\Trip;
 use App\Models\User;
+use App\Observability\BookingMetrics;
 use App\SeatLock\SeatLockService;
 use App\ValueObjects\Leg;
 use App\ValueObjects\Money;
@@ -118,6 +119,7 @@ final readonly class CreateOrder
 
                 // Expira o pedido (e libera os assentos) quando o prazo vencer.
                 ExpireOrderJob::scheduleFor($order);
+                BookingMetrics::orderCreated();
 
                 return $order;
             });

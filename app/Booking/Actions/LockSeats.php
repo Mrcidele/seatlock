@@ -13,6 +13,7 @@ use App\Events\SeatLocked;
 use App\Events\SeatReleased;
 use App\Models\Seat;
 use App\Models\Trip;
+use App\Observability\BookingMetrics;
 use App\SeatLock\LockResult;
 use App\SeatLock\SeatLockService;
 use App\ValueObjects\Leg;
@@ -54,8 +55,12 @@ final readonly class LockSeats
         $result = $this->locks->acquire($trip->id, $seatIds, $leg, $owner, BookingSettings::lockTtl());
 
         if (! $result->acquired) {
+            BookingMetrics::lockConflict();
+
             throw $this->unavailable($trip, $leg, $result->conflictingSeatIds, $seatIds);
         }
+
+        $result->degraded ? BookingMetrics::lockDegraded() : BookingMetrics::lockAcquired(count($seatIds));
 
         event(SeatLocked::forLeg($trip->id, $seatIds, $leg));
 

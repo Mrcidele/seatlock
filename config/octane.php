@@ -132,8 +132,11 @@ return [
     |
     */
 
+    // Singletons da aplicação são sem estado de request (ver tests/Unit/ArchitectureTest).
     'warm' => [
         ...Octane::defaultServicesToWarm(),
+        App\SeatLock\SeatLockService::class,
+        App\Tickets\TicketSigner::class,
     ],
 
     'flush' => [

@@ -303,6 +303,123 @@
                 }
             }
         },
+        "/v1/admin/metrics": {
+            "get": {
+                "operationId": "v1.admin.metrics",
+                "summary": "M\u00e9tricas de neg\u00f3cio do per\u00edodo (somente admin): convers\u00e3o, pedidos\nexpirados, perdas por conflito e tempo at\u00e9 pagar",
+                "tags": [
+                    "Metrics"
+                ],
+                "parameters": [
+                    {
+                        "name": "hours",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 720
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "period_hours": {
+                                                    "type": "integer"
+                                                },
+                                                "orders_created": {
+                                                    "type": "integer"
+                                                },
+                                                "orders_paid": {
+                                                    "type": "integer"
+                                                },
+                                                "orders_expired": {
+                                                    "type": "integer"
+                                                },
+                                                "orders_lost_to_conflict": {
+                                                    "type": "integer",
+                                                    "minimum": 0
+                                                },
+                                                "conversion_rate": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "avg_seconds_to_pay": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "p95_seconds_to_pay": {
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "period_hours",
+                                                "orders_created",
+                                                "orders_paid",
+                                                "orders_expired",
+                                                "orders_lost_to_conflict",
+                                                "conversion_rate",
+                                                "avg_seconds_to_pay",
+                                                "p95_seconds_to_pay"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "An error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview.",
+                                            "examples": [
+                                                ""
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/v1/orders": {
             "get": {
                 "operationId": "v1.orders.index",
