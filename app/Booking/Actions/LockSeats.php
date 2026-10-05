@@ -9,6 +9,8 @@ use App\Booking\BookingSettings;
 use App\Booking\Exceptions\SeatsUnavailable;
 use App\Booking\Exceptions\TripNotBookable;
 use App\Booking\SeatAvailability;
+use App\Events\SeatLocked;
+use App\Events\SeatReleased;
 use App\Models\Seat;
 use App\Models\Trip;
 use App\SeatLock\LockResult;
@@ -55,6 +57,8 @@ final readonly class LockSeats
             throw $this->unavailable($trip, $leg, $result->conflictingSeatIds, $seatIds);
         }
 
+        event(SeatLocked::forLeg($trip->id, $seatIds, $leg));
+
         return $result;
     }
 
@@ -63,7 +67,14 @@ final readonly class LockSeats
      */
     public function release(Trip $trip, Leg $leg, array $seatIds, string $owner): int
     {
-        return $this->locks->release($trip->id, array_values(array_unique($seatIds)), $leg, $owner);
+        $seatIds = array_values(array_unique($seatIds));
+        $released = $this->locks->release($trip->id, $seatIds, $leg, $owner);
+
+        if ($released > 0) {
+            event(SeatReleased::forLeg($trip->id, $seatIds, $leg));
+        }
+
+        return $released;
     }
 
     /**

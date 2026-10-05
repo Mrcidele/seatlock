@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});
+// trip.{id} é público (sem autorização): só carrega IDs de assentos e trechos.
+
+Broadcast::channel('App.Models.User.{id}', fn (User $user, string $id): bool => $user->id === $id);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Booking\Actions;
 
 use App\Enums\OrderStatus;
+use App\Events\SeatReleased;
 use App\Enums\ReservationStatus;
 use App\Models\Order;
 use App\SeatLock\SeatLockService;
@@ -42,6 +43,7 @@ final readonly class ExpireOrder
 
         // O TTL do Redis já deve ter liberado; garantimos mesmo assim (só o dono apaga).
         $this->locks->release($order->trip_id, $order->seatIds(), $order->leg(), $order->lock_owner);
+        event(SeatReleased::forLeg($order->trip_id, $order->seatIds(), $order->leg()));
 
         return true;
     }

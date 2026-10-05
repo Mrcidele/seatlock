@@ -6,6 +6,7 @@ namespace App\Booking\Actions;
 
 use App\Booking\Exceptions\OrderNotModifiable;
 use App\Enums\OrderStatus;
+use App\Events\SeatReleased;
 use App\Enums\ReservationStatus;
 use App\Models\Order;
 use App\SeatLock\SeatLockService;
@@ -34,6 +35,7 @@ final readonly class CancelPendingOrder
         });
 
         $this->locks->release($order->trip_id, $order->seatIds(), $order->leg(), $order->lock_owner);
+        event(SeatReleased::forLeg($order->trip_id, $order->seatIds(), $order->leg()));
 
         return $order;
     }

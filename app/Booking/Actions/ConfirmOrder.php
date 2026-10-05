@@ -6,6 +6,8 @@ namespace App\Booking\Actions;
 
 use App\Booking\ConfirmationOutcome;
 use App\Enums\OrderStatus;
+use App\Events\SeatReleased;
+use App\Events\SeatSold;
 use App\Enums\ReservationStatus;
 use App\Models\Order;
 use App\Models\Reservation;
@@ -69,6 +71,12 @@ final readonly class ConfirmOrder
             // Vendido (ou perdido): o lock temporário não serve mais para nada.
             $this->locks->release($order->trip_id, $order->seatIds(), $order->leg(), $order->lock_owner);
         }
+
+        match ($outcome) {
+            ConfirmationOutcome::Confirmed => event(SeatSold::forLeg($order->trip_id, $order->seatIds(), $order->leg())),
+            ConfirmationOutcome::SeatsTaken => event(SeatReleased::forLeg($order->trip_id, $order->seatIds(), $order->leg())),
+            default => null,
+        };
 
         return $outcome;
     }

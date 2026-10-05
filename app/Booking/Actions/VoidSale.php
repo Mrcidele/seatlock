@@ -6,6 +6,7 @@ namespace App\Booking\Actions;
 
 use App\Enums\OrderStatus;
 use App\Enums\ReservationStatus;
+use App\Events\SeatReleased;
 use App\Models\Order;
 use App\Models\SeatSegment;
 use App\Models\Ticket;
@@ -19,7 +20,7 @@ final readonly class VoidSale
 {
     public function handle(Order $order, OrderStatus $to, string $reason, int $refundedCents = 0): Order
     {
-        return DB::transaction(function () use ($order, $to, $reason, $refundedCents): Order {
+        $voided = DB::transaction(function () use ($order, $to, $reason, $refundedCents): Order {
             $locked = Order::query()->lockForUpdate()->findOrFail($order->id);
 
             $reservationIds = $locked->reservations()->pluck('id');
@@ -33,5 +34,9 @@ final readonly class VoidSale
 
             return $locked;
         });
+
+        event(SeatReleased::forLeg($voided->trip_id, $voided->seatIds(), $voided->leg()));
+
+        return $voided;
     }
 }
